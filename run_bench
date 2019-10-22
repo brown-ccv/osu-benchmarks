@@ -13,11 +13,8 @@ module load mpi osu-mpi/5.6.2_mvapich2-2.3a_gcc
 echo -n "job_id,"
 echo $SLURM_JOB_ID
 
-# Output CPU Family Name
-srun --mpi=pmi2 sh -c "cat /sys/devices/cpu/caps/pmu_name" 
-
-# Output Node numbers
-echo $SLURM_JOB_NODELIST
+# Output CPU Family Name and Node Numbers
+srun --mpi=pmi2 sh -c "(echo $SLURM_PROCID && hostname -s && cat /sys/devices/cpu/caps/pmu_name) | sed -z 's/\s/,/g' | sed 's/.$/\n/'" 
 
 # Perform pt2pt latency test
 srun --mpi=pmi2 osu_latency
