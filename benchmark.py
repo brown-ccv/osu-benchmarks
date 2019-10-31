@@ -3,6 +3,7 @@ import os
 
 # Environment Variables
 data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.h5f5'
+batch_script_path = 'gpfs/data/ccvstaff/osu_benchmarks/run_bench'
 batches = 5
 
 # function for easy management of dictionaries / autovivification
@@ -61,9 +62,6 @@ def div_two(two_d_dict):
 	
 #runHist = h5py.File('/gpfs/data/ccvstaff/osu-benchmarks/runHist.h5f5', 'a')
 
-# Get list of nodes in batch partition
-# nodeList = os.popen("sinfo --Node | grep batch | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
-
 # Get list of idle nodes
 idleList = os.popen("sinfo --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
 
@@ -73,7 +71,7 @@ for i in range(batches):
 	if (benchNode1 == -1 or benchNode2 == -1):
 		continue # something more sensible?
 	else:
-		x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + "run_bench"
+		x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + batch_script_path
 		os.popen(x_line)
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
 			histArray[benchNode1][benchNode2] = 1
