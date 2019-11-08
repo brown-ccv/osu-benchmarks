@@ -1,9 +1,10 @@
 
-import os
+import os, csv
 
 # Environment Variables
-data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.h5f5'
-batch_script_path = 'gpfs/data/ccvstaff/osu_benchmarks/run_bench'
+data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.csv'
+batch_script_path = '/users/mcho4/osu-benchmarks/run_osu_latency'
+# batch_script_path = '/gpfs/data/ccvstaff/osu_benchmarks/run_osu_latency'
 batches = 5
 
 # function for easy management of dictionaries / autovivification
@@ -48,20 +49,25 @@ def min_nodes(two_d_dict, idlenode):
 def div_two(two_d_dict):
 	for i in two_d_dict:
 		for j in two_d_dict[i]:
-			two_d_dict[i][j] /= 2
+			two_d_dict[i][j] = two_d_dict[i][j] / 2
 
+# Modify data file
+def update_data(data_path, two_d_dict):
+	with open(data_path, 'w', newline="") as f:
+		csvwriter = csv.writer(f, delimiter=',')
+		for i in two_d_dict:
+			for j in two_d_dict[i]:
+				csvwriter.writerow([i, j, two_d_dict[i][j]])
 
 # Import data file or create an empty histArray
-#if (os.path.exists(data_path)):
+histArray = Tree()
+if (os.path.exists(data_path)):
 	# import and parse into histArray
-#	for key1 in histArray:
-#		for key2 in histArray[key1]:
-#			histArray[key1][key2] /= 2
-#else:
-#	histArray = Tree()
+	with open(data_path, 'r', newline="") as f:
+		csvreader = csv.reader(f, delimiter=',')
+		for row in csvreader:
+			histArray[row[0]][row[1]]=float(row[2])
 	
-#runHist = h5py.File('/gpfs/data/ccvstaff/osu-benchmarks/runHist.h5f5', 'a')
-
 # Get list of idle nodes
 idleList = os.popen("sinfo --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
 
@@ -72,13 +78,13 @@ for i in range(batches):
 		continue # something more sensible?
 	else:
 		x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + batch_script_path
-		os.popen(x_line)
+		print(x_line) # debug line
+		#os.popen(x_line) # execute benchmark
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
 			histArray[benchNode1][benchNode2] = 1
 		else:
 			histArray[benchNode1][benchNode2] += 1
 	div_two(histArray)
 
-# TODO: save two dimensional dictionary histArray into h5py for later use
-
+update_data(data_path, histArray)
 
