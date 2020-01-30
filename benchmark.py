@@ -3,8 +3,8 @@ import os, csv
 
 # Environment Variables
 data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.csv'
-batch_script_path = '/users/mcho4/osu-benchmarks/run_osu_latency'
-# batch_script_path = '/gpfs/data/ccvstaff/osu_benchmarks/run_osu_latency'
+batch_script_path = ['/users/mcho4/osu-benchmarks/run_osu_latency', '/users/mcho4/osu-benchmarks/run_osu_bibw']
+# batch_script_path = '/gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu-benchmarks/run_osu_latency'
 batches = 5
 
 # function for easy management of dictionaries / autovivification
@@ -77,9 +77,11 @@ for i in range(batches):
 	if (benchNode1 == -1 or benchNode2 == -1):
 		continue # something more sensible?
 	else:
-		x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + batch_script_path
-		print(x_line) # debug line
-		#os.popen(x_line) # execute benchmark
+		for j in batch_script_path:
+			x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
+			print(x_line) # debug line
+			os.popen(x_line) # execute benchmark
+
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
 			histArray[benchNode1][benchNode2] = 1
 		else:

@@ -1,4 +1,4 @@
 sqlalchemy
 PyMySQL
 pandas
-
+python-dotenv
