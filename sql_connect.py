@@ -15,6 +15,7 @@ class SQLConnection:
 			self.__host = os.getenv('HOST')
 			self.__db = os.getenv('DATABASE')
 			self.__osu_data= os.getenv('OSU_DATA')
+			self.__table = os.getenv('TABLE')
 			self.connect_sql()
 		else:
 			print('config.env does not exist.')
@@ -25,7 +26,7 @@ class SQLConnection:
 		self.con = engine.connect()
 
 	def add_dataframe(self, df):
-		df.to_sql('mpi_benchmark', con=self.con, index=False, if_exists='append')
+		df.to_sql(self.__table, con=self.con, index=False, if_exists='append')
 
 	def add_osu_data(self):
 		readline = os.popen("tail -n 1 " + self.__osu_data).read()[:-2].split(',')

@@ -17,6 +17,7 @@ ibinfo=`echo $ibinfo | sed -z 's/\s//g' | sed -z 's/.$//'`
 
 # Perform pt2pt latency test
 test_results=`srun --mpi=pmi2 osu_latency`
+echo $test_results
 data_point=`awk '/2097152/ {print $2}' <<< "$test_results"`
 
 # Extract one line results to store in the data file
