@@ -32,4 +32,9 @@ Run OSU benchmarks on Oscar for openmpi and mvapich2.
 - DONE: <del>Format the output of the benchmarks & the node  - what is a sensible way to do this?</del>
 - DONE: <del>Wrap up the benchmark + formatting + info in a scripting language of your choice.  Output to text file and database.</del>  
 - DONE: <del>Database - how to ship of the results - we'll need to talk to someone who knows what they are doing with this.</del>
-- Cron job to run benchmarks 
+- Cron job to run benchmarks
+
+### Notes on the results
+- BIBW: results are in MB/s (bandwidth)
+- LATENCY: results are in microseconds (for size 2097152)
+ 

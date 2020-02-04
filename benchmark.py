@@ -2,6 +2,9 @@
 import os, csv
 
 # Environment Variables
+# These eventually needs to go into dotenv
+sinfo = '/usr/local/bin/sinfo'
+sbatch = '/usr/local/bin/sbatch'
 data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.csv'
 batch_script_path = ['/users/mcho4/osu-benchmarks/run_osu_latency', '/users/mcho4/osu-benchmarks/run_osu_bibw']
 # batch_script_path = '/gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu-benchmarks/run_osu_latency'
@@ -69,7 +72,7 @@ if (os.path.exists(data_path)):
 			histArray[row[0]][row[1]]=float(row[2])
 	
 # Get list of idle nodes
-idleList = os.popen("sinfo --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
+idleList = os.popen(sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
 
 # Choose which node to benchmark in this iteration
 for i in range(batches):
@@ -78,7 +81,7 @@ for i in range(batches):
 		continue # something more sensible?
 	else:
 		for j in batch_script_path:
-			x_line = "sbatch --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
+			x_line = sbatch + " --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
 			print(x_line) # debug line
 			os.popen(x_line) # execute benchmark
 
