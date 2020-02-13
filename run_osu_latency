@@ -1,6 +1,6 @@
 #!/bin/bash
 # Basic script that calls pt2pt/osu_latency
-#SBATCH --time=0:05:00
+#SBATCH --time=0:02:00
 #SBATCH --nodes=2
 #SBATCH --tasks-per-node=1
 #SBATCH --exclusive
