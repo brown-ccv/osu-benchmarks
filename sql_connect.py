@@ -4,12 +4,16 @@
 import sqlalchemy
 import pandas as pd
 import dotenv, os
+import sys
+
+jobid = sys.argv[1] # Gets jobid
+benchtype = sys.argv[2] # Gets benchmark type
 
 class SQLConnection:
 	def __init__(self):
-		if os.path.exists('config.env'):
+		if os.path.exists('/users/mcho4/osu-benchmarks/config.env'):
 			# load dotenv
-			dotenv.load_dotenv('config.env')
+			dotenv.load_dotenv('/users/mcho4/osu-benchmarks/config.env')
 			self.__username = os.getenv('USER')
 			self.__password = os.getenv('PASSWORD')
 			self.__host = os.getenv('HOST')
@@ -29,7 +33,7 @@ class SQLConnection:
 		df.to_sql(self.__table, con=self.con, index=False, if_exists='append')
 
 	def add_osu_data(self):
-		readline = os.popen("tail -n 1 " + self.__osu_data).read()[:-2].split(',')
+		readline = os.popen("cat " + self.__osu_data + " | grep " + jobid + " | grep " + benchtype).read()[:-2].split(',')
 		parsed = pd.DataFrame({'slurm_id' : [readline[2]], 'node1_id' : [readline[3][0:8]], 'node2_id' : [readline[5][0:8]], 'node1_arch' : [readline[4][0:10]], 'node2_arch' : [readline[6][0:10]], 'bench_type' : [readline[9][0:8]], 'result' : [readline[10]]})
 		self.add_dataframe(parsed)
 
