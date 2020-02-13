@@ -8,7 +8,7 @@ sbatch = '/usr/local/bin/sbatch'
 data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.csv'
 batch_script_path = ['/users/mcho4/osu-benchmarks/run_osu_latency', '/users/mcho4/osu-benchmarks/run_osu_bibw']
 # batch_script_path = '/gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu-benchmarks/run_osu_latency'
-batches = 5
+batches = 10
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
