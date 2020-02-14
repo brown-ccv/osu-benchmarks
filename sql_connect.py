@@ -54,7 +54,7 @@ if jobc == 'w':
 	sql.add_osu_data()
 elif jobc == 'r':
 	now = datetime.now()
-	bibwData = sql.get_data('bibw').unstack().fillna(0)['result'].astype(float)
+	bibwData = sql.get_data('bibw').fillna(0)['result'].astype(float).groupby(['node1_id', 'node2_id']).mean().unstack().fillna(0)
 	bibwHeat = sns.heatmap(bibwData)
 	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
 
