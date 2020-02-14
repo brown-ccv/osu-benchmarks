@@ -5,9 +5,17 @@ import sqlalchemy
 import pandas as pd
 import dotenv, os
 import sys
+from datetime import datetime
 
-jobid = sys.argv[1] # Gets jobid
-benchtype = sys.argv[2] # Gets benchmark type
+jobc = sys.argv[1] # Read or Write
+if jobc == 'w':
+	jobid = sys.argv[2] # Gets jobid
+	benchtype = sys.argv[3] # Gets benchmark type
+
+elif jobc == 'r':
+	import seaborn as sns # for heatmap generation
+	sns.set() # init seaborn
+	from matplotlib import pyplot as plt
 
 class SQLConnection:
 	def __init__(self):
@@ -36,10 +44,18 @@ class SQLConnection:
 		readline = os.popen("cat " + self.__osu_data + " | grep " + jobid + " | grep " + benchtype).read()[:-2].split(',')
 		parsed = pd.DataFrame({'slurm_id' : [readline[2]], 'node1_id' : [readline[3][0:8]], 'node2_id' : [readline[5][0:8]], 'node1_arch' : [readline[4][0:10]], 'node2_arch' : [readline[6][0:10]], 'bench_type' : [readline[9][0:8]], 'result' : [readline[10]]})
 		self.add_dataframe(parsed)
+	
+	def get_data(self, benchtype):
+		return pd.read_sql("select node1_id, node2_id, result from " + self.__table + " where bench_type = '" + benchtype + "';", self.con, index_col = ['node1_id', 'node2_id'])
 
 # Main body starts here
 sql = SQLConnection()
-sql.add_osu_data()
-
+if jobc == 'w':
+	sql.add_osu_data()
+elif jobc == 'r':
+	now = datetime.now()
+	bibwData = sql.get_data('bibw').unstack().fillna(0)['result'].astype(float)
+	bibwHeat = sns.heatmap(bibwData)
+	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
 
 
