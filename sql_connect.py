@@ -16,6 +16,7 @@ elif jobc == 'r':
 	import seaborn as sns # for heatmap generation
 	sns.set() # init seaborn
 	from matplotlib import pyplot as plt
+	from matplotlib import cm
 
 class SQLConnection:
 	def __init__(self):
@@ -48,14 +49,33 @@ class SQLConnection:
 	def get_data(self, benchtype):
 		return pd.read_sql("select node1_id, node2_id, result from " + self.__table + " where bench_type = '" + benchtype + "';", self.con, index_col = ['node1_id', 'node2_id'])
 
+# Rename axis
+def trans_nodeid(nodeid):
+	if len(nodeid) < 8:
+		return 'node0' + nodeid[4:]
+	else:
+		return nodeid
+
 # Main body starts here
 sql = SQLConnection()
 if jobc == 'w':
 	sql.add_osu_data()
 elif jobc == 'r':
 	now = datetime.now()
-	bibwData = sql.get_data('bibw').fillna(0)['result'].astype(float).groupby(['node1_id', 'node2_id']).mean().unstack().fillna(0)
-	bibwHeat = sns.heatmap(bibwData)
+	bibwData = sql.get_data('bibw').rename(trans_nodeid).fillna(0)['result'].astype(float).groupby(['node1_id', 'node2_id']).mean().unstack().fillna(0)
+	bibwHeat = sns.heatmap(bibwData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
+	plt.gcf().set_size_inches(100,75)
+	plt.title('Bidirectional Bandwidth (MB/s)', fontsize=72)
 	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
+
+	plt.cla() # clear axis
+	plt.clf()
+	plt.close()
+
+	latencyData = sql.get_data('latency').rename(trans_nodeid).fillna(0)['result'].astype(float).groupby(['node1_id', 'node2_id']).mean().unstack().fillna(0)
+	latencyHeat = sns.heatmap(latencyData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
+	plt.gcf().set_size_inches(100,75)
+	plt.title('Latency (microsec)', fontsize=72)
+	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'lat.png')
 
 

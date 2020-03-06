@@ -54,6 +54,14 @@ def div_two(two_d_dict):
 		for j in two_d_dict[i]:
 			two_d_dict[i][j] = two_d_dict[i][j] / 2
 
+# Multiply entries in histArray by 99999/100000
+# (99999/100000)^(700^2/2) = 0.0863
+# elements in histArray less likely to be rounded off to zero
+def mul_nines(two_d_dict):
+	for i in two_d_dict:
+		for j in two_d_dict[i]:
+			two_d_dict[i][j] = two_d_dict[i][j]*99999/100000
+
 # Modify data file
 def update_data(data_path, two_d_dict):
 	with open(data_path, 'w', newline="") as f:
@@ -89,7 +97,9 @@ for i in range(batches):
 			histArray[benchNode1][benchNode2] = 1
 		else:
 			histArray[benchNode1][benchNode2] += 1
-	div_two(histArray)
+	
+	mul_nines(histArray)
+	#div_two(histArray)
 
 update_data(data_path, histArray)
 
