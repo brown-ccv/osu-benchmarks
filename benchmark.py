@@ -93,7 +93,7 @@ while (i < batches):
 	else:
 		slurmError = False
 		for j in batch_script_path: # for all osu-benchmark scripts that need to be executed (i.e. bibw, latency)
-			x_line = sbatch + "--nodelist=" + benchNode1 + "," + benchNode2 + " " + j
+			x_line = sbatch + " --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
 			print(x_line) #DEBUG Line for cmd
 			proc = subprocess.run([x_line], shell=True, stderr=subprocess.PIPE)
 			if (proc.stderr != 'None'):
