@@ -7,8 +7,8 @@ import dotenv, os
 import sys
 from datetime import datetime
 
-# TODO: Phase out absolute paths
-cwd='/gpfs/data/admin/golem/osu'
+cwd=os.getcwd()
+print(cwd)
 
 jobc = sys.argv[1] # Read or Write
 if jobc == 'w':
@@ -23,14 +23,14 @@ elif jobc == 'r':
 
 class SQLConnection:
 	def __init__(self):
-		if os.path.exists(cwd+'/config.env'):
+		if os.path.exists(cwd+"/config.env"):
 			# load dotenv
-			dotenv.load_dotenv(cwd+'/config.env')
-			self.__username = os.getenv('USER')
+			dotenv.load_dotenv(cwd+"/config.env")
+			self.__username = os.getenv('USERNAME')
 			self.__password = os.getenv('PASSWORD')
 			self.__host = os.getenv('HOST')
 			self.__db = os.getenv('DATABASE')
-			self.__osu_data= os.getenv('OSU_DATA')
+			self.__osu_data= os.getenv('TESTDATA_PATH')
 			self.__table = os.getenv('TABLE')
 			self.connect_sql()
 		else:
