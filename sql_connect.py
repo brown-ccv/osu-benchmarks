@@ -7,6 +7,8 @@ import dotenv, os
 import sys
 from datetime import datetime
 
+cwd = os.getcwd()
+
 jobc = sys.argv[1] # Read or Write
 if jobc == 'w':
 	jobid = sys.argv[2] # Gets jobid
@@ -20,9 +22,9 @@ elif jobc == 'r':
 
 class SQLConnection:
 	def __init__(self):
-		if os.path.exists('/users/mcho4/osu-benchmarks/config.env'):
+		if os.path.exists(cwd+'/config.env'):
 			# load dotenv
-			dotenv.load_dotenv('/users/mcho4/osu-benchmarks/config.env')
+			dotenv.load_dotenv(cwd+'/config.env')
 			self.__username = os.getenv('USER')
 			self.__password = os.getenv('PASSWORD')
 			self.__host = os.getenv('HOST')
