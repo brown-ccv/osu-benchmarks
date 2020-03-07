@@ -73,7 +73,7 @@ elif jobc == 'r':
 	bibwHeat = sns.heatmap(bibwData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
 	plt.gcf().set_size_inches(100,75)
 	plt.title('Bidirectional Bandwidth (MB/s)', fontsize=72)
-	plt.savefig(sql.get_heatmap_path() + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
+	plt.savefig(sql.get_heatmap_path() + now.strftime("%Y%m%d-%H%M%S") + 'bibw.png')
 
 	plt.cla() # clear axis
 	plt.clf()
@@ -83,6 +83,6 @@ elif jobc == 'r':
 	latencyHeat = sns.heatmap(latencyData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
 	plt.gcf().set_size_inches(100,75)
 	plt.title('Latency (microsec)', fontsize=72)
-	plt.savefig(sql.get_heatmap_path() + now.strftime("%d%m%Y-%H%M%S") + 'lat.png')
+	plt.savefig(sql.get_heatmap_path() + now.strftime("%Y%m%d-%H%M%S") + 'lat.png')
 
 
