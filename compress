@@ -1,0 +1,15 @@
+#!/bin/bash
+# Script that compresses output files into tarball
+# Location of the data file must be recorded in config.env of the directory this script was called from.
+DIR="$PWD"
+DATA_PATH=`cat $PWD/config.env | grep OSU_DATA | awk -F'=' '{print $2}'`
+
+# Build the list of tar files
+TAR_PREFIX=`ls $DATA_PATH/*.out | awk -F'/' '{print $NF}' | awk '{print substr ($0, 0, 4)}' | sort -u`
+
+# Loop over the data folder to add new .out files to tar
+for i in $TAR_PREFIX; do
+	export j=$i
+	find /gpfs/data/ccvstaff/osu-benchmarks/ -name $i"*.out" | xargs -I{} sh -c 'tar -rf "/gpfs/data/ccvstaff/osu-benchmarks/"$j"abcd.tar" {} && rm {}'
+done
+
