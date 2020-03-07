@@ -10,7 +10,7 @@
 # TODO: see bibw
 module load mpi osu-mpi/5.6.2_mvapich2-2.3a_gcc
 DIR="$PWD"
-DATA_PATH=`cat $PWD/environment.env | grep OSU_DATA | awk -F'=' '{print $2}'`
+DATA_PATH=`cat $PWD/environment.env | grep DATA_PATH | awk -F'=' '{print $2}'`
 INST_PATH=`cat $PWD/environment.env | grep INST_PATH | awk -F'=' '{print $2}'`
 bench_type='latency'
 
@@ -26,7 +26,7 @@ data_point=`awk '/2097152/ {print $2}' <<< "$test_results"`
 
 # Extract one line results to store in the data file
 one_line_results=`date +"%D,%T" | sed -z 's/.$//'`","$SLURM_JOB_ID","$nodeinfo","$ibinfo","$bench_type","$data_point
-echo $one_line_results >> $OSU_DATA/test_data.temp
+echo $one_line_results >> $DATA_PATH/test_data.temp
 
 # Toggle python script to push results to SQL db
 source /gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu_env/bin/activate
