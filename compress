@@ -10,6 +10,6 @@ TAR_PREFIX=`ls $DATA_PATH/*.out | awk -F'/' '{print $NF}' | awk '{print substr (
 # Loop over the data folder to add new .out files to tar
 for i in $TAR_PREFIX; do
 	export j=$i
-	find /gpfs/data/ccvstaff/osu-benchmarks/ -name $i"*.out" | xargs -I{} sh -c 'tar -rf "/gpfs/data/ccvstaff/osu-benchmarks/"$j"abcd.tar" {} && rm {}'
+	find $DIR -name $i"*.out" | xargs -I{} sh -c 'tar -rf $DIR"/"$j"abcd.tar" {} && rm {}'
 done
 
