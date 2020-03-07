@@ -8,6 +8,7 @@ import sys
 from datetime import datetime
 
 cwd = os.getcwd()
+print(cwd)
 
 jobc = sys.argv[1] # Read or Write
 if jobc == 'w':
