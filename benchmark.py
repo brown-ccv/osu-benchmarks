@@ -81,7 +81,8 @@ if (os.path.exists(data_path)):
 			histArray[row[0]][row[1]]=float(row[2])
 	
 # Get list of idle nodes
-idleList = subprocess.run(sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
+proc = subprocess.run([sinfo " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'"], capture_output=True)
+idleList = proc.stdout.read().split(',')
 
 # Choose which node to benchmark in this iteration
 i = 0;
