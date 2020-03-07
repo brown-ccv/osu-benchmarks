@@ -104,6 +104,7 @@ while (i < batches):
 			histArray[benchNode1][benchNode2] += 1
 		if (not slurmError):
 			i += 1
+			print(i)
 	mul_nines(histArray)
 
 update_data(data_path, histArray)
