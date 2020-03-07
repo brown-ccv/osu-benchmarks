@@ -7,8 +7,8 @@ import dotenv, os
 import sys
 from datetime import datetime
 
-cwd = os.getcwd()
-print(cwd)
+# TODO: Phase out absolute paths
+cwd=/gpfs/data/admin/golem/config.env
 
 jobc = sys.argv[1] # Read or Write
 if jobc == 'w':
