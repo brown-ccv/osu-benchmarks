@@ -1,14 +1,15 @@
 
-import os, csv
+import os, csv, dotenv, subprocess
 
 # Environment Variables
-# These eventually needs to go into dotenv
-sinfo = '/usr/local/bin/sinfo'
-sbatch = '/usr/local/bin/sbatch'
-data_path = '/gpfs/data/ccvstaff/osu-benchmarks/runHist.csv'
-batch_script_path = ['/users/mcho4/osu-benchmarks/run_osu_latency', '/users/mcho4/osu-benchmarks/run_osu_bibw']
-# batch_script_path = '/gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu-benchmarks/run_osu_latency'
-batches = 10
+# These come from environment.env file in the work directory.
+cwd = os.getcwd()
+dotenv.load_dotenv(cwd+'/environment.env')
+sinfo = os.getenv('SINFO')
+sbatch = os.getenv('SBATCH')
+data_path = os.getenv('DATA_PATH')
+batch_script_path = [os.getenv('INST_PATH')+'/run_osu_latency', os.getenv('INST_PATH')+'/run_osu_bibw']
+batches = int(os.getenv('N_CRON'))
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
@@ -80,26 +81,27 @@ if (os.path.exists(data_path)):
 			histArray[row[0]][row[1]]=float(row[2])
 	
 # Get list of idle nodes
-idleList = os.popen(sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
-
 # Choose which node to benchmark in this iteration
-for i in range(batches):
+i = 0;
+while (i < batches):
 	(benchNode1, benchNode2) = min_nodes(histArray, idleList)
 	if (benchNode1 == -1 or benchNode2 == -1):
-		continue # something more sensible?
+		continue
 	else:
-		for j in batch_script_path:
-			x_line = sbatch + " --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
-			print(x_line) # debug line
-			os.popen(x_line) # execute benchmark
-
+		slurmError = False
+		for j in batch_script_path: # for all osu-benchmark scripts that need to be executed (i.e. bibw, latency)
+			x_line = sbatch + "--nodelist=" + benchNode1 + "," + benchNode2 + " " + j
+			print(x_line) #DEBUG Line for cmd
+			proc = subprocess.Popen(x_line, stdout=PIPE, stderr=PIPE)
+			if (proc.stderr != 'None'):
+				slurmError = True
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
 			histArray[benchNode1][benchNode2] = 1
 		else:
 			histArray[benchNode1][benchNode2] += 1
-	
+		if (not slurmError):
+			i += 1
 	mul_nines(histArray)
-	#div_two(histArray)
 
 update_data(data_path, histArray)
 
