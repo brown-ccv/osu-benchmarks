@@ -81,7 +81,7 @@ if (os.path.exists(data_path)):
 			histArray[row[0]][row[1]]=float(row[2])
 	
 # Get list of idle nodes
-idleList = subprocess.Popen(sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
+idleList = subprocess.run(sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'").read().split(',')
 
 # Choose which node to benchmark in this iteration
 i = 0;
@@ -94,7 +94,7 @@ while (i < batches):
 		for j in batch_script_path: # for all osu-benchmark scripts that need to be executed (i.e. bibw, latency)
 			x_line = sbatch + "--nodelist=" + benchNode1 + "," + benchNode2 + " " + j
 			print(x_line) #DEBUG Line for cmd
-			proc = subprocess.Popen(x_line, stdout=PIPE, stderr=PIPE)
+			proc = subprocess.run(x_line, capture_output=True)
 			if (proc.stderr != 'None'):
 				slurmError = True
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
