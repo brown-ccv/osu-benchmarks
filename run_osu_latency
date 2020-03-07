@@ -28,10 +28,6 @@ data_point=`awk '/2097152/ {print $2}' <<< "$test_results"`
 one_line_results=`date +"%D,%T" | sed -z 's/.$//'`","$SLURM_JOB_ID","$nodeinfo","$ibinfo","$bench_type","$data_point
 echo $one_line_results >> $OSU_DATA/test_data.temp
 
-#Get script location (https://stackoverflow.com/questions/59895/how-to-get-the-source-directory-of-a-bash-script-from-within-the-script-itself)
-#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-DIR='/users/mcho4/osu-benchmarks'
-
 # Toggle python script to push results to SQL db
 source /gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu_env/bin/activate
 python $INST_PATH/sql_connect.py "w" "$SLURM_JOB_ID" "$bench_type"
