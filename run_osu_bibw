@@ -7,7 +7,11 @@
 #SBATCH -o /gpfs/data/ccvstaff/osu-benchmarks/%j.out
 
 # Environment
+# TODO: These should eventually load from environment.env
 module load mpi osu-mpi/5.6.2_mvapich2-2.3a_gcc python/3.6.6
+DIR="$PWD"
+DATA_PATH=`cat $PWD/environment.env | grep OSU_DATA | awk -F'=' '{print $2}'`
+INST_PATH=`cat $PWD/environment.env | grep INST_PATH | awk -F'=' '{print $2}'`
 bench_type='bibw'
 
 # Store CPU Family Name and Node Numbers
@@ -22,13 +26,9 @@ data_point=`awk '/2097152/ {print $2}' <<< "$test_results"`
 
 # Extract one line results to store in the data file
 one_line_results=`date +"%D,%T" | sed -z 's/.$//'`","$SLURM_JOB_ID","$nodeinfo","$ibinfo","$bench_type","$data_point
-echo $one_line_results >> /gpfs/data/ccvstaff/osu-benchmarks/test_data.temp
-
-# Get script location (https://stackoverflow.com/questions/59895/how-to-get-the-source-directory-of-a-bash-script-from-within-the-script-itself)
-#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-DIR='/users/mcho4/osu-benchmarks'
+echo $one_line_results >> $OSU_DATA/test_data.temp
 
 # Toggle python script to push results to SQL db
 source /gpfs/runtime/opt/osu-mpi/5.6.2_mvapich2-2.3a_gcc/osu_env/bin/activate
-python $DIR/sql_connect.py "w" "$SLURM_JOB_ID" "$bench_type"
+python $INST_PATH/sql_connect.py "w" "$SLURM_JOB_ID" "$bench_type"
 
