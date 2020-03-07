@@ -1,0 +1,11 @@
+#!/bin/bash
+# Script to be added on cron job
+# Location of the data file must be recorded in config.env of the directory this script was called from.
+DIR="$PWD"
+INST_PATH=`cat $PWD/environment.env | grep INST_PATH | awk -F'=' '{print $2}'`
+
+source /users/mcho4/.bashrc
+module load python/3.6.6 osu-mpi
+source $INST_PATH/../osu_env/bin/activate
+python3 $INST_PATH/sql_connect.py r
+

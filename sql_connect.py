@@ -32,10 +32,14 @@ class SQLConnection:
 			self.__db = os.getenv('DATABASE')
 			self.__osu_data= os.getenv('TESTDATA_PATH')
 			self.__table = os.getenv('TABLE')
+			self.__heatmap_path = os.getenv('HEATMAP_PATH')
 			self.connect_sql()
 		else:
 			print('config.env does not exist.')
 	
+	def get_heatmap_path(self):
+		return self.__heatmap_path
+
 	def connect_sql(self):
 		url = sqlalchemy.engine.url.URL('mysql+mysqlconnector', username=self.__username, password=self.__password, host=self.__host, database=self.__db, query={'auth_plugin': 'mysql_clear_password'})
 		engine = sqlalchemy.create_engine(url)
@@ -69,7 +73,7 @@ elif jobc == 'r':
 	bibwHeat = sns.heatmap(bibwData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
 	plt.gcf().set_size_inches(100,75)
 	plt.title('Bidirectional Bandwidth (MB/s)', fontsize=72)
-	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
+	plt.savefig(sql.get_heatmap_path() + now.strftime("%d%m%Y-%H%M%S") + 'bibw.png')
 
 	plt.cla() # clear axis
 	plt.clf()
@@ -79,6 +83,6 @@ elif jobc == 'r':
 	latencyHeat = sns.heatmap(latencyData, xticklabels=True, yticklabels=True, square=True, linewidths=.005, cmap=cm.get_cmap('terrain_r'))
 	plt.gcf().set_size_inches(100,75)
 	plt.title('Latency (microsec)', fontsize=72)
-	plt.savefig('/gpfs/data/ccvstaff/osu-benchmarks/figs/' + now.strftime("%d%m%Y-%H%M%S") + 'lat.png')
+	plt.savefig(sql.get_heatmap_path() + now.strftime("%d%m%Y-%H%M%S") + 'lat.png')
 
 
