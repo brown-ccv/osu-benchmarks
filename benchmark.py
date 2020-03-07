@@ -96,7 +96,8 @@ while (i < batches):
 			x_line = sbatch + " --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
 			print(x_line) #DEBUG Line for cmd
 			proc = subprocess.run([x_line], shell=True, stderr=subprocess.PIPE)
-			if (proc.stderr != 'None'):
+			if (proc.stderr == 'None'):
+				print(proc.stderr)
 				slurmError = True
 		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
 			histArray[benchNode1][benchNode2] = 1
