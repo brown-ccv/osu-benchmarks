@@ -10,6 +10,7 @@ TAR_PREFIX=`ls $DATA_PATH/*.out | awk -F'/' '{print $NF}' | awk '{print substr (
 # Loop over the data folder to add new .out files to tar
 for i in $TAR_PREFIX; do
 	export j=$i
-	find $DIR -name $i"*.out" | xargs -I{} sh -c 'tar -rf $DIR"/"$j"abcd.tar" {} && rm {}'
+	cd $DIR
+	find ./ -name $i"*.out" | xargs -I{} sh -c 'tar -rf $DIR"/"$j"abcd.tar" {} && rm {}'
 done
 
