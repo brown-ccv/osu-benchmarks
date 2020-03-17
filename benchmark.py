@@ -85,8 +85,9 @@ proc = subprocess.run([sinfo + " --Node | grep batch | grep idle | awk '{print $
 idleList = proc.stdout.decode().split(',')
 
 # Choose which node to benchmark in this iteration
-i = 0;
-while (i < batches):
+nSubmit = 0;
+nTried = 0;
+while (nSubmit < batches and nTried < 50):
 	(benchNode1, benchNode2) = min_nodes(histArray, idleList)
 	if (benchNode1 == -1 or benchNode2 == -1):
 		continue
@@ -104,8 +105,9 @@ while (i < batches):
 		else:
 			histArray[benchNode1][benchNode2] += 1
 		if (not slurmError):
-			i += 1
+			nSubmit += 1
 			print(i)
+	nTried += 1
 	mul_nines(histArray)
 
 update_data(data_path, histArray)
