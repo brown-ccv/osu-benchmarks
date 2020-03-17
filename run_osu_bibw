@@ -15,6 +15,7 @@ INST_PATH=`cat $PWD/environment.env | grep INST_PATH | awk -F'=' '{print $2}'`
 bench_type='bibw'
 
 # Store CPU Family Name and Node Numbers
+# TODO: As noted by Sam Fulcomer, need to see if cross-model (rather than cross-arch) execution works. If not, lscpu should be used for nodeinfo instead. Check Skylake and CascadeLake.
 nodeinfo=`/usr/local/bin/srun --mpi=pmi2 sh -c "(hostname -s && cat /sys/devices/cpu/caps/pmu_name) | sed -z 's/\s/,/g'" | sed 's/.$//'`
 ibinfo=`/usr/local/bin/srun --mpi=pmi2 sh -c "(/usr/sbin/ibstat | grep 'CA type')" | awk '{print $3","}'`
 ibinfo=`echo $ibinfo | sed -z 's/\s//g' | sed -z 's/.$//'`
