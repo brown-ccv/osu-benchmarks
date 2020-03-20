@@ -11,6 +11,6 @@ TAR_PREFIX=`ls $DATA_PATH/*.out | awk -F'/' '{print $NF}' | awk '{print substr (
 for i in $TAR_PREFIX; do
 	export j=$i
 	cd $DIR
-	find ./ -name $i"*.out" | xargs -I{} sh -c 'tar -rf $DIR"/"$j"abcd.tar" {} && rm {}'
+	find ./ -name $i"*.out" | xargs -I{} bash -c 'tar -rf $j"abcd.tar" {} && rm {}'
 done
 
