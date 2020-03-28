@@ -107,7 +107,6 @@ while (nSubmit < batches and nTried < max_attempt):
 			histArray[benchNode1][benchNode2] += 1
 		if (not slurmError):
 			nSubmit += 1
-			print(i)
 	nTried += 1
 	mul_nines(histArray)
 
