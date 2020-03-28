@@ -10,6 +10,7 @@ sbatch = os.getenv('SBATCH')
 data_path = os.getenv('DATA_PATH')
 batch_script_path = [os.getenv('INST_PATH')+'/run_osu_latency', os.getenv('INST_PATH')+'/run_osu_bibw']
 batches = int(os.getenv('N_CRON'))
+max_attempt = int(os.getenv('N_ATTEMPTS'))
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
@@ -87,7 +88,7 @@ idleList = proc.stdout.decode().split(',')
 # Choose which node to benchmark in this iteration
 nSubmit = 0;
 nTried = 0;
-while (nSubmit < batches and nTried < 50):
+while (nSubmit < batches and nTried < max_attempt):
 	(benchNode1, benchNode2) = min_nodes(histArray, idleList)
 	if (benchNode1 == -1 or benchNode2 == -1):
 		continue
