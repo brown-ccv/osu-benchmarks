@@ -5,12 +5,18 @@ import os, csv, dotenv, subprocess
 # These come from environment.env file in the work directory.
 cwd = os.getcwd()
 dotenv.load_dotenv(cwd+'/environment.env')
-sinfo = os.getenv('SINFO')
-sbatch = os.getenv('SBATCH')
-data_path = os.getenv('DATA_PATH')
-batch_script_path = [os.getenv('INST_PATH')+'/run_osu_latency', os.getenv('INST_PATH')+'/run_osu_bibw']
+sinfo = os.getenv('SINFO') # Path to sinfo command
+sbatch = os.getenv('SBATCH') # Path to sbatch command
+data_dir = os.getenv('OSU_DATA') # Path to data directory
+inst_dir = os.getenv('INST_DIR') # Path to installation
+module_name = os.getenv('MODULE_NAME') # Name of the module registered on the system
 batches = int(os.getenv('N_CRON'))
 max_attempt = int(os.getenv('N_ATTEMPTS'))
+
+# Derive necessary variables directly from the environment variables
+data_path = data_dir + module_name + '/runHist.csv'
+inst_path = inst_dir + module_name + '/osu-benchmarks'
+batch_script_path = [inst_path + '/run_osu_latency', inst_path + 'run_osu_bibw']
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
