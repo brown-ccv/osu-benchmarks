@@ -1,10 +1,12 @@
 #!/bin/bash
 # Script to be added on cron job
-# Location of the data file must be recorded in config.env of the directory this script was called from.
+# Location of the data file must be recorded in environment.env of the directory this script was called from.
 DIR="$PWD"
-INST_PATH=`cat $PWD/environment.env | grep INST_PATH | awk -F'=' '{print $2}'`
+INST_DIR=`cat $PWD/environment.env | grep INST_DIR | awk -F'=' '{print $2}'`
+MODULE_NAME=`cat $PWD/environment.env | grep MODULE_NAME | awk -F'=' '{print $2}'`
+INST_PATH="${INST_DIR}${MODULE_NAME}/osu-benchmarks"
 
-source /users/mcho4/.bashrc
+source ~/.bashrc
 module load python/3.6.6 osu-mpi
 source $INST_PATH/../osu_env/bin/activate
 python3 $INST_PATH/benchmark.py

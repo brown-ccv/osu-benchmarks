@@ -4,7 +4,7 @@
 DIR="$PWD"
 INST_DIR=`cat $PWD/environment.env | grep INST_DIR | awk -F'=' '{print $2}'`
 MODULE_NAME=`cat $PWD/environment.env | grep MODULE_NAME | awk -F'=' '{print $2}'`
-INST_PATH=$INST_DIR$MODULE_NAME"/osu-benchmarks"
+INST_PATH="${INST_DIR}${MODULE_NAME}/osu-benchmarks"
 
 source ~/.bashrc
 module load python/3.6.6 osu-mpi/$MODULE_NAME
