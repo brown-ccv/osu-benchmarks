@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script that compresses output files into tarball
-# Location of the data file must be recorded in config.env of the directory this script was called from.
+# Location of the data file must be recorded in environment.env of the directory this script was called from.
 DIR="$PWD"
 DATA_PATH=`cat $PWD/environment.env | grep OSU_DATA | awk -F'=' '{print $2}'`
 
