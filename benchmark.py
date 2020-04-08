@@ -82,7 +82,7 @@ def update_data(data_path, two_d_dict):
 
 # Abort run if cur_q > max_q
 if (cur_q > max_q):
-	return 0
+	sys.exit(0)
 
 # Import data file or create an empty histArray
 histArray = Tree()
