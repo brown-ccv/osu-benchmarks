@@ -7,6 +7,7 @@ cwd = os.getcwd()
 dotenv.load_dotenv(cwd+'/environment.env')
 sinfo = os.getenv('SINFO') # Path to sinfo command
 sbatch = os.getenv('SBATCH') # Path to sbatch command
+squeue = os.getenv('SQUEUE') # Path to squeue command
 data_dir = os.getenv('OSU_DATA') # Path to data directory
 inst_dir = os.getenv('INST_DIR') # Path to installation
 module_name = os.getenv('MODULE_NAME') # Name of the module registered on the system
@@ -18,7 +19,7 @@ max_q = int(os.getenv('MAX_Q'))
 data_path = data_dir + module_name + '/runHist.csv'
 inst_path = inst_dir + module_name + '/osu-benchmarks'
 batch_script_path = [inst_path + '/run_osu_latency', inst_path + 'run_osu_bibw']
-cur_q = int(subprocess.run(["myq | wc -l"], shell=True, stdout=subprocess.PIPE))
+cur_q = int(subprocess.run([squeue + " -h -u $USER | wc -l"], shell=True, stdout=subprocess.PIPE))
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
