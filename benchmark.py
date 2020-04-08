@@ -12,11 +12,13 @@ inst_dir = os.getenv('INST_DIR') # Path to installation
 module_name = os.getenv('MODULE_NAME') # Name of the module registered on the system
 batches = int(os.getenv('N_CRON'))
 max_attempt = int(os.getenv('N_ATTEMPTS'))
+max_q = int(os.getenv('MAX_Q'))
 
 # Derive necessary variables directly from the environment variables
 data_path = data_dir + module_name + '/runHist.csv'
 inst_path = inst_dir + module_name + '/osu-benchmarks'
 batch_script_path = [inst_path + '/run_osu_latency', inst_path + 'run_osu_bibw']
+cur_q = int(subprocess.run(["myq | wc -l"], shell=True, stdout=subprocess.PIPE))
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
@@ -78,6 +80,10 @@ def update_data(data_path, two_d_dict):
 			for j in two_d_dict[i]:
 				csvwriter.writerow([i, j, two_d_dict[i][j]])
 
+# Abort run if cur_q > max_q
+if (cur_q > max_q):
+	return 0
+
 # Import data file or create an empty histArray
 histArray = Tree()
 if (os.path.exists(data_path)):
@@ -92,8 +98,9 @@ proc = subprocess.run([sinfo + " --Node | grep batch | grep idle | awk '{print $
 idleList = proc.stdout.decode().split(',')
 
 # Choose which node to benchmark in this iteration
-nSubmit = 0;
-nTried = 0;
+nSubmit = 0
+nTried = 0
+
 while (nSubmit < batches and nTried < max_attempt):
 	(benchNode1, benchNode2) = min_nodes(histArray, idleList)
 	if (benchNode1 == -1 or benchNode2 == -1):
