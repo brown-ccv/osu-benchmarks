@@ -19,7 +19,8 @@ max_q = int(os.getenv('MAX_Q'))
 data_path = data_dir + module_name + '/runHist.csv'
 inst_path = inst_dir + module_name + '/osu-benchmarks'
 batch_script_path = [inst_path + '/run_osu_latency', inst_path + 'run_osu_bibw']
-cur_q = int(subprocess.run([squeue + " -h -u $USER | wc -l"], shell=True, stdout=subprocess.PIPE))
+cur_b = subprocess.run([squeue + " -h -u $USER | wc -l"], shell=True, stdout=subprocess.PIPE)
+cur_q = int(cur_b.stdout)
 
 # function for easy management of dictionaries / autovivification
 # from https://en.wikipedia.org/wiki/Autovivification#Python
