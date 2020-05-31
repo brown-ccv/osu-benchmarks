@@ -1,129 +1,155 @@
+# benchmark.py
+# Reads in environment variables from environment.env
+# Initializes the environment for osu-benchmark
+# This Python Script needs to be run when new nodes were added / removed
 
-import os, csv, dotenv, subprocess, sys
+# DEPENDENCIES
+import os, csv, dotenv, subprocess, sys, random
+import pandas as pd
 
-# Environment Variables
-# These come from environment.env file in the work directory.
+# ENVIRONMENT VARIABLES
+# These are read from environment.env in the working directory.
+# Python-dotenv format is used.
 cwd = os.getcwd()
 dotenv.load_dotenv(cwd+'/environment.env')
-sinfo = os.getenv('SINFO') # Path to sinfo command
-sbatch = os.getenv('SBATCH') # Path to sbatch command
-squeue = os.getenv('SQUEUE') # Path to squeue command
-data_dir = os.getenv('OSU_DATA') # Path to data directory
-inst_dir = os.getenv('INST_DIR') # Path to installation
-module_name = os.getenv('MODULE_NAME') # Name of the module registered on the system
-batches = int(os.getenv('N_CRON'))
-max_attempt = int(os.getenv('N_ATTEMPTS'))
-max_q = int(os.getenv('MAX_Q'))
 
-# Derive necessary variables directly from the environment variables
-data_path = data_dir + module_name + '/runHist.csv'
-inst_path = inst_dir + module_name + '/osu-benchmarks'
-batch_script_path = [inst_path + '/run_osu_latency', inst_path + 'run_osu_bibw']
-cur_b = subprocess.run([squeue + " -h -u $USER | wc -l"], shell=True, stdout=subprocess.PIPE)
-cur_q = int(cur_b.stdout)
+sinfo = os.getenv('SINFO') # path to sinfo command
+sbatch = os.getenv('SBATCH') # path to sbatch command
+squeue = os.getenv('SQUEUE') # path to squeue command
+data_dir = os.getenv('DATA_DIR') # path where output files are stored
+inst_dir = os.getenv('INST_DIR') # path to osu-mpi module
+osu_module_name = os.getenv('OSU_MODULE_NAME') # name of module (with version)
+py_module_name = os.getenv('PY_MODULE_NAME') # name of python module used in setting up venv
+inst_include = inst_dir + osu_module_name + '/osu-benchmarks'
+sample = os.getenv('JOBS_PER_HR') # number of jobs per hour
+njobs = int(os.getenv('N_JOBS')) # number of repetitions for benchmark
 
-# function for easy management of dictionaries / autovivification
-# from https://en.wikipedia.org/wiki/Autovivification#Python
+# These are predefined list of target nodes that will be analyzed through benchmark
+# TODO: In the future, it may be sensible to change this to predefined list of architectures.
+# As of now (May 2020), newer nodes (node1333+) do not explicitly show architecture when sinfo is invoked.
+# arch = os.getenv('ARCH').split(',') can replace these.
+node_start = int(os.getenv('NODE_START'))
+node_finish = int(os.getenv('NODE_FINISH'))
+
+# GLOBAL VARIABLES
+# Ideally, the line that follows should be removed when TODO in line 25 is implemented.
+arch_list = ['sandy', 'ivy', 'haswell', 'broadwell', 'skylake', 'unspecified']
+job_list =['bibw', 'latency']
+
+# CLASS DEFINITIONS
+
+# Dictionary with autovivification
+# Refer to https://en.wikipedia.org/wiki/Autovivification#Python for details
 class Tree(dict):
 	def __missing__(self, key):
 		value = self[key] = type(self)()
 		return value
 
-# Return minimum value
-def min(two_d_dict):
-	index1 = -1
-	index2 = -1
-	val = 1
-	for key1 in two_d_dict:
-		for key2 in two_d_dict[key1]:
-			if (two_d_dict[key1][key2]) < val:
-				index1 = key1
-				index2 = key2
-				val = two_d_dict[key1][key2]
-	return (index1, index2)
+# Class containing current node states
+class NodeStat():
+	def __init__(self):
+		# First collect the list of nodes from sinfo
+		nodels_r = subprocess.run([sinfo + " --N -o %N,%f"], shell=True, stdout = subprocess.PIPE)
+		nodels = nodels_r.stdout.decode()
 
-# Return pair of nodes to run in this iteration
-def min_nodes(two_d_dict, idlenode):
-	index1 = -1
-	index2 = -1
-	val = 1
+		# Order the information into usable format
+		self.__nodeInfo = {} # nodeXXX: 32core, intel, haswell
+		self.__nodeArch = {} # haswell: nodeXXX, nodeYYY, nodeZZZ
 
-	# node lists are in alphanumerical order
-	for i in range(len(idlenode)):
-		for j in range(i+1, len(idlenode)):
-			# first check if the entry exists or not
-			if ((idlenode[i] not in two_d_dict) or (idlenode[j] not in two_d_dict[idlenode[i]])):
-				return (idlenode[i], idlenode[j])
-			elif (two_d_dict[idlenode[i]][idlenode[j]] < val):
-				index1 = idlenode[i]
-				index2 = idlenode[j]
-				val = two_d_dict[idlenode[i]][idlenode[j]]
-	return (index1, index2)
+		for group in nodels.split('\n'):
+			values = group.split(',')
+			# If key is included in the list of target arch
+			if (values[0] >= node_start and values[0] <= node_finish):
+				key = values[0]
+				self.__nodeInfo[key] = []
+				archSpecified = False
+				for v in values[1:]:
+					self.__nodeInfo[key].append(v)
+					if (v in arch_list and not archSpecified):
+						self.__nodeArch[v] = key
+						archSpecified = True
+				if not archSpecified:
+					# For node1333+
+					self.__nodeArch['unspecified'] = key
 
-# Divide entries in histArray by two
-def div_two(two_d_dict):
-	for i in two_d_dict:
-		for j in two_d_dict[i]:
-			two_d_dict[i][j] = two_d_dict[i][j] / 2
+		# Set some private variables
+		# none for now / placeholder
 
-# Multiply entries in histArray by 99999/100000
-# (99999/100000)^(700^2/2) = 0.0863
-# elements in histArray less likely to be rounded off to zero
-def mul_nines(two_d_dict):
-	for i in two_d_dict:
-		for j in two_d_dict[i]:
-			two_d_dict[i][j] = two_d_dict[i][j]*99999/100000
+	def randNode(self, arch = 'any', ratio):
+		# Return random list of pair of nodes with specified architecture of length determined by ratio
+		# If unspecified, return any
+		# First determine number of nodes to return
+		if arch == 'any':
+			arch = arch_list[random.randrange(0, len(arch_list))]
 
-# Modify data file
-def update_data(data_path, two_d_dict):
-	with open(data_path, 'w', newline="") as f:
-		csvwriter = csv.writer(f, delimiter=',')
-		for i in two_d_dict:
-			for j in two_d_dict[i]:
-				csvwriter.writerow([i, j, two_d_dict[i][j]])
+		nRandNode = nNodes * nNodes / 2 * ratio
+		rNodePairs = []
+		nodesList = list(self.__nodeArch[arch].items())
+		nNodes = len(nodesList)
 
-# Abort run if cur_q > max_q
-if (cur_q > max_q):
-	sys.exit(0)
+		# Now sample pairs of nodes to benchmark
+		while nRandNode > 0:
+			i = random.randrange(0, nNodes)
+			j = random.randrange(i+1, nNodes)
+			rNodePairs.append([nodesList[i], nodesList[j]])
 
-# Import data file or create an empty histArray
-histArray = Tree()
-if (os.path.exists(data_path)):
-	# import and parse into histArray
-	with open(data_path, 'r', newline="") as f:
-		csvreader = csv.reader(f, delimiter=',')
-		for row in csvreader:
-			histArray[row[0]][row[1]]=float(row[2])
-	
-# Get list of idle nodes
-proc = subprocess.run([sinfo + " --Node | grep batch | grep idle | awk '{print $1}' | sed -z 's/\s/,/g' | sed -z 's/.$//'"], shell=True, stdout=subprocess.PIPE)
-idleList = proc.stdout.decode().split(',')
+		return rNodePairs
 
-# Choose which node to benchmark in this iteration
-nSubmit = 0
-nTried = 0
+class SLURMJob():
+	def __init__(self):
+		self.__scriptList = []
 
-while (nSubmit < batches and nTried < max_attempt):
-	(benchNode1, benchNode2) = min_nodes(histArray, idleList)
-	if (benchNode1 == -1 or benchNode2 == -1):
-		continue
-	else:
-		slurmError = False
-		for j in batch_script_path: # for all osu-benchmark scripts that need to be executed (i.e. bibw, latency)
-			x_line = sbatch + " --nodelist=" + benchNode1 + "," + benchNode2 + " " + j
-			print(x_line) #DEBUG Line for cmd
-			proc = subprocess.run([x_line], shell=True, stderr=subprocess.PIPE)
-			if (proc.stderr != b''):
-				print(proc.stderr)
-				slurmError = True
-		if (benchNode1 not in histArray) or (benchNode2 not in histArray[benchNode1]):
-			histArray[benchNode1][benchNode2] = 1
-		else:
-			histArray[benchNode1][benchNode2] += 1
-		if (not slurmError):
-			nSubmit += 1
-	nTried += 1
-	mul_nines(histArray)
+	def __init__(self, nodePairList):
+		self.__scriptList = []
+		self.__buildList(nodePairList)
 
-update_data(data_path, histArray)
+	def buildList(self, nodePairList)
+		# For each node pairs
+		for nodePair in nodePairList:
+			# Build SLURM Job script from scratch
+			curScript = [
+			'#!/bin/bash',
+			'#Autogenerated SLURM script for osu-benchmark',
+			]
 
+			curScript.append(''.join(['#SBATCH --time=0:', str(njobs * 5),':00']))
+			curScript.append('#SBATCH --nodes=2')
+			curScript.append('#SBATCH --tasks-per-node=1')
+			curScript.append('#SBATCH --exclusive')
+			curScript.append(''.join(['#SBATCH -o ', data_dir, '/%j.out']))
+
+			# Line 5 / Load Modules
+			curScript.append(''.join(['module load ', py_module_name, ' ', osu_module_name]))
+			# Line 6 / Source venv
+			curScript.append(''.join(['source ', inst_include, '/../osu_env/bin/activate']))
+			# For each job
+			for jobtype in job_list:
+				# For each iteration
+				for iteration in njobs:
+					curScript.append(''.join([inst_include, '/run_osu_', jobtype]))
+
+			self.__scriptList.append(curScript)
+
+	def getScript(self):
+		return self.__scriptList
+
+def main():
+	# First build NodeStat object
+	curNode = NodeStat()
+	# Then get list of random pairs of Nodes
+	nodePairList = curNode.randNode()
+
+	# Build SLURM submission script
+	curSLURMjob = SLURMJob(nodePairList)
+	# Read them out
+	scriptList = curSLURMjob.getScript()
+	# Run each script in the list
+	for i in range(len(scriptList)):
+	# Write out and use subprocess to execute on SLURM
+		with open(data_dir + '/SLURMinput_' + str(i), 'w', newline="") as file:
+			file.write("\n".join(str(line) for lin in scriptList[i]))
+		subprocess.run(''.join(['sbatch ', data_dir, '/SLURMinput_', str(i)]))
+
+# Execute if main
+if __name__ == 'main':
+	main() # change to something appropriate
