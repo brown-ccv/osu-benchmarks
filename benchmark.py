@@ -149,7 +149,7 @@ def main():
 		with open(data_dir + '/SLURMinput_' + str(i), 'w', newline="") as file:
 			file.write("\n".join(str(line) for lin in scriptList[i]))
 		subprocess.run(''.join(['sbatch ', data_dir, '/SLURMinput_', str(i)]))
-	# TODO
+	# TODO!
 
 # Execute if main
 if __name__ == 'main':
